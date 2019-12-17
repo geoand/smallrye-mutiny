@@ -19,6 +19,7 @@ import org.reactivestreams.Subscriber;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.converters.MultiConverter;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.AbstractMulti;
 import io.smallrye.mutiny.operators.multi.builders.*;
 import io.smallrye.mutiny.subscription.BackPressureStrategy;
@@ -45,7 +46,7 @@ public class MultiCreate {
      * @return created {@link Uni}
      */
     public <I, T> Multi<T> converter(MultiConverter<I, T> converter, I instance) {
-        return converter.from(instance);
+        return Infrastructure.onMultiCreation(converter.from(instance));
     }
 
     /**
@@ -137,12 +138,13 @@ public class MultiCreate {
      */
     public <T> Multi<T> publisher(Publisher<T> publisher) {
         Publisher<T> actual = nonNull(publisher, "publisher");
-        return new AbstractMulti<T>() {
+
+        return Infrastructure.onMultiCreation(new AbstractMulti<T>() {
             @Override
             protected Publisher<T> publisher() {
                 return actual;
             }
-        };
+        });
     }
 
     /**
@@ -278,7 +280,7 @@ public class MultiCreate {
      */
     @SafeVarargs
     public final <T> Multi<T> items(T... items) {
-        return new CollectionBasedMulti<>(nonNull(items, "items"));
+        return Infrastructure.onMultiCreation(new CollectionBasedMulti<>(nonNull(items, "items")));
     }
 
     /**
@@ -295,7 +297,7 @@ public class MultiCreate {
      * @return the new {@link Multi}
      */
     public <T> Multi<T> iterable(Iterable<T> iterable) {
-        return new IterableBasedMulti<>(nonNull(iterable, "produceIterable"));
+        return Infrastructure.onMultiCreation(new IterableBasedMulti<>(nonNull(iterable, "produceIterable")));
     }
 
     /**
@@ -385,7 +387,7 @@ public class MultiCreate {
      */
     public <T> Multi<T> emitter(Consumer<MultiEmitter<? super T>> consumer, BackPressureStrategy strategy) {
         Consumer<MultiEmitter<? super T>> actual = nonNull(consumer, "consumer");
-        return new EmitterBasedMulti<>(actual, nonNull(strategy, "strategy"));
+        return Infrastructure.onMultiCreation(new EmitterBasedMulti<>(actual, nonNull(strategy, "strategy")));
     }
 
     /**
@@ -406,7 +408,7 @@ public class MultiCreate {
      * @return the produced {@link Multi}
      */
     public <T> Multi<T> deferred(Supplier<? extends Multi<? extends T>> supplier) {
-        return new DeferredMulti<>(nonNull(supplier, "supplier"));
+        return Infrastructure.onMultiCreation(new DeferredMulti<>(nonNull(supplier, "supplier")));
     }
 
     /**
@@ -434,7 +436,7 @@ public class MultiCreate {
      * @return the produced {@link Multi}
      */
     public <T> Multi<T> failure(Supplier<Throwable> supplier) {
-        return new FailedMulti<>(supplier);
+        return Infrastructure.onMultiCreation(new FailedMulti<>(supplier));
     }
 
     /**
@@ -444,7 +446,7 @@ public class MultiCreate {
      * @return a never emitting {@link Multi}
      */
     public <T> Multi<T> nothing() {
-        return NeverMulti.never();
+        return Infrastructure.onMultiCreation(NeverMulti.never());
     }
 
     /**
@@ -455,7 +457,7 @@ public class MultiCreate {
      * @return an empty {@link Multi}
      */
     public <T> Multi<T> empty() {
-        return EmptyMulti.empty();
+        return Infrastructure.onMultiCreation(EmptyMulti.empty());
     }
 
     /**

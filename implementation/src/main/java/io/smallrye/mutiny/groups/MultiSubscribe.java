@@ -14,6 +14,7 @@ import org.reactivestreams.Subscription;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.BlockingIterable;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.AbstractMulti;
 import io.smallrye.mutiny.subscription.Cancellable;
 import io.smallrye.mutiny.subscription.CancellableSubscriber;
@@ -43,9 +44,9 @@ public class MultiSubscribe<T> {
      * @param <S> the subscriber type
      * @return the passed subscriber
      */
-    @SuppressWarnings("SubscriberImplementation")
     public <S extends Subscriber<? super T>> S withSubscriber(S subscriber) {
-        upstream.subscribe(subscriber);
+        Subscriber<? super T> actual = Infrastructure.onMultiSubscription(upstream, subscriber);
+        upstream.subscribe(actual);
         return subscriber;
     }
 

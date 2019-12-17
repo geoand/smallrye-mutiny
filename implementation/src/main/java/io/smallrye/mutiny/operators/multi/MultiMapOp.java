@@ -23,7 +23,7 @@ public final class MultiMapOp<T, U> extends AbstractMultiOperator<T, U> {
         if (downstream == null) {
             throw new NullPointerException("Subscriber is `null`");
         }
-        upstream.subscribe(new MapProcessor<T, U>(downstream, mapper));
+        upstream.subscribe().withSubscriber(new MapProcessor<T, U>(downstream, mapper));
     }
 
     @Override

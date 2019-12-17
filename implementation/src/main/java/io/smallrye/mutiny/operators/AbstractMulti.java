@@ -15,6 +15,7 @@ import org.reactivestreams.Subscription;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.*;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.multi.MultiCacheOp;
 import io.smallrye.mutiny.operators.multi.MultiEmitOnOp;
 import io.smallrye.mutiny.operators.multi.MultiSubscribeOnOp;
@@ -33,8 +34,9 @@ public abstract class AbstractMulti<T> implements Multi<T> {
         if (publisher == null) {
             throw new IllegalStateException("Invalid call to subscription, we don't have a publisher");
         }
+
         //noinspection SubscriberImplementation
-        publisher.subscribe(new SerializedSubscriber<>(new Subscriber<T>() {
+        SerializedSubscriber<T> serialized = new SerializedSubscriber<>(new Subscriber<T>() {
 
             AtomicReference<Subscription> reference = new AtomicReference<>();
 
@@ -105,7 +107,9 @@ public abstract class AbstractMulti<T> implements Multi<T> {
                     reference.set(CANCELLED);
                 }
             }
-        }));
+        });
+
+        publisher.subscribe(Infrastructure.onMultiSubscription(publisher, serialized));
     }
 
     @Override
@@ -145,7 +149,7 @@ public abstract class AbstractMulti<T> implements Multi<T> {
 
     @Override
     public Multi<T> cache() {
-        return new MultiCacheOp<>(this);
+        return Infrastructure.onMultiCreation(new MultiCacheOp<>(this));
     }
 
     @Override
@@ -160,12 +164,12 @@ public abstract class AbstractMulti<T> implements Multi<T> {
 
     @Override
     public Multi<T> emitOn(Executor executor) {
-        return new MultiEmitOnOp<>(this, nonNull(executor, "executor"));
+        return Infrastructure.onMultiCreation(new MultiEmitOnOp<>(this, nonNull(executor, "executor")));
     }
 
     @Override
     public Multi<T> subscribeOn(Executor executor) {
-        return new MultiSubscribeOnOp<>(this, executor);
+        return Infrastructure.onMultiCreation(new MultiSubscribeOnOp<>(this, executor));
     }
 
     @Override

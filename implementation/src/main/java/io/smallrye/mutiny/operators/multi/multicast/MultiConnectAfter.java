@@ -34,7 +34,7 @@ public class MultiConnectAfter<T> extends MultiOperator<T, T> {
     @Override
     public void subscribe(Subscriber<? super T> downstream) {
         // TODO Wondering if we can just delay the subscription and not call connect.
-        upstream().subscribe(downstream);
+        upstream().subscribe().withSubscriber(downstream);
         if (count.incrementAndGet() == numberOfSubscribers) {
             ((ConnectableMulti) upstream()).connect(connection);
         }

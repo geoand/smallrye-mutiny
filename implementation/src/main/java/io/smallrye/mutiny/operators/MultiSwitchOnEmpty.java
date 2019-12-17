@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.multi.MultiSwitchOnEmptyOp;
 import io.smallrye.mutiny.operators.multi.builders.FailedMulti;
 
@@ -25,10 +26,10 @@ public class MultiSwitchOnEmpty<T> extends MultiOperator<T, T> {
             try {
                 publisher = supplier.get();
             } catch (Exception e) {
-                return new FailedMulti<>(e);
+                return Infrastructure.onMultiCreation(new FailedMulti<>(e));
             }
             if (publisher == null) {
-                return new FailedMulti<>(new NullPointerException(SUPPLIER_PRODUCED_NULL));
+                return Infrastructure.onMultiCreation(new FailedMulti<>(new NullPointerException(SUPPLIER_PRODUCED_NULL)));
             }
             if (publisher instanceof Multi) {
                 //noinspection unchecked
@@ -38,6 +39,6 @@ public class MultiSwitchOnEmpty<T> extends MultiOperator<T, T> {
             }
         };
         Multi<? extends T> deferred = Multi.createFrom().deferred(actual);
-        return new MultiSwitchOnEmptyOp<>(upstream(), deferred);
+        return Infrastructure.onMultiCreation(new MultiSwitchOnEmptyOp<>(upstream(), deferred));
     }
 }

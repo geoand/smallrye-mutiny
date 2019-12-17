@@ -60,14 +60,14 @@ public class MultiWindowOp<T> extends AbstractMultiOperator<T, Multi<T>> {
     @Override
     public void subscribe(Subscriber<? super Multi<T>> downstream) {
         if (skip == size) {
-            upstream.subscribe(new MultiWindowExactProcessor<>(downstream,
+            upstream.subscribe().withSubscriber(new MultiWindowExactProcessor<>(downstream,
                     size,
                     processorQueueSupplier));
         } else if (skip > size) {
-            upstream.subscribe(new MultiWindowWithSkipProcessor<>(downstream,
+            upstream.subscribe().withSubscriber(new MultiWindowWithSkipProcessor<>(downstream,
                     size, skip, processorQueueSupplier));
         } else {
-            upstream.subscribe(new MultiWindowWithOverlapProcessor<>(downstream,
+            upstream.subscribe().withSubscriber(new MultiWindowWithOverlapProcessor<>(downstream,
                     size,
                     skip, processorQueueSupplier, overflowQueueSupplier.get()));
         }
@@ -106,6 +106,7 @@ public class MultiWindowOp<T> extends AbstractMultiOperator<T, Multi<T>> {
                         upstream.get().cancel();
                     }
                 });
+
                 processor = proc;
                 downstream.onNext(proc);
             }

@@ -25,7 +25,7 @@ public final class MultiTakeWhileOp<T> extends AbstractMultiOperator<T, T> {
     @Override
     public void subscribe(Subscriber<? super T> actual) {
         ParameterValidation.nonNullNpe(actual, "subscriber");
-        upstream.subscribe(new TakeWhileProcessor<>(actual, predicate));
+        upstream.subscribe().withSubscriber(new TakeWhileProcessor<>(actual, predicate));
     }
 
     static final class TakeWhileProcessor<T> extends MultiOperatorProcessor<T, T> {

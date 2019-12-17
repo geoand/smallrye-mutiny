@@ -18,6 +18,7 @@ import org.reactivestreams.Subscription;
 import io.smallrye.mutiny.helpers.ParameterValidation;
 import io.smallrye.mutiny.helpers.Subscriptions;
 import io.smallrye.mutiny.helpers.queues.SpscLinkedArrayQueue;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.operators.MultiOperator;
 
 /**
@@ -59,11 +60,14 @@ public class MultiCombineLatestOp<I, O> extends MultiOperator<I, O> {
 
         if (publishers.size() == 1) {
             publishers.get(0).subscribe(
-                    new MultiMapOp.MapProcessor<>(downstream, x -> combinator.apply(Collections.singletonList(x))));
+                    Infrastructure.onMultiSubscription(publishers.get(0),
+                            new MultiMapOp.MapProcessor<>(downstream,
+                                    x -> combinator.apply(Collections.singletonList(x)))));
             return;
         }
 
-        CombineLatestCoordinator<I, O> coordinator = new CombineLatestCoordinator<>(downstream, combinator, publishers.size(),
+        CombineLatestCoordinator<I, O> coordinator = new CombineLatestCoordinator<>(downstream, combinator,
+                publishers.size(),
                 bufferSize, delayErrors);
         downstream.onSubscribe(coordinator);
         coordinator.subscribe(publishers);
@@ -124,7 +128,7 @@ public class MultiCombineLatestOp<I, O> extends MultiOperator<I, O> {
                 if (done || cancelled) {
                     return;
                 }
-                sources.get(i).subscribe(subscriber);
+                sources.get(i).subscribe(Infrastructure.onMultiSubscription(sources.get(i), subscriber));
                 i++;
             }
         }

@@ -26,7 +26,7 @@ public class MultiOnOverflowDropItemsOp<T> extends AbstractMultiOperator<T, T> {
     }
 
     public void subscribe(Subscriber<? super T> downstream) {
-        upstream.subscribe(new MultiOnOverflowDropItemsProcessor<T>(downstream, onItemDrop));
+        upstream.subscribe().withSubscriber(new MultiOnOverflowDropItemsProcessor<T>(downstream, onItemDrop));
     }
 
     static final class MultiOnOverflowDropItemsProcessor<T> extends MultiOperatorProcessor<T, T> {

@@ -58,7 +58,7 @@ public class MultiReferenceCount<T> extends AbstractMulti<T> implements Multi<T>
             connect = conn.shouldConnectAfterIncrement(numberOfSubscribers);
         }
 
-        upstream.subscribe(new MultiReferenceCountSubscriber<>(s, this, conn));
+        upstream.subscribe().withSubscriber(new MultiReferenceCountSubscriber<>(s, this, conn));
 
         if (connect) {
             upstream.connect(conn);

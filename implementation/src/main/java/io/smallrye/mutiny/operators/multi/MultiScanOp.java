@@ -24,7 +24,7 @@ public final class MultiScanOp<T> extends AbstractMultiOperator<T, T> {
 
     @Override
     public void subscribe(Subscriber<? super T> downstream) {
-        upstream.subscribe(new ScanProcessor<>(downstream, accumulator));
+        upstream.subscribe().withSubscriber(new ScanProcessor<>(downstream, accumulator));
     }
 
     static final class ScanProcessor<T> extends MultiOperatorProcessor<T, T> {
